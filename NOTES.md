@@ -23,3 +23,32 @@ outcome — all read directly off `DecisionResult`/`ExecutionResult`.
 `streamlit run app.py` verified launching without error (HTTP 200, no
 traceback, checked via both a direct bare-mode run of `app.py` and a real
 headless `streamlit run`). Added `streamlit==1.63.0` to `requirements.txt`.
+
+# Day 5 notes
+
+`src/llm_explainer.py` (`explain_decision(context, api_key) -> str`) adds
+an **explanation-only** layer, user-facing name **"RecoverIQ Decision
+Assistant"**. It has no action authority: it never calls `ActionExecutor`,
+never constructs a `PolicyCheckResult`, and cannot change `final_action` —
+it only narrates a decision `DecisionEngine`/`PolicyEngine` already made,
+grounded strictly in the structured `build_recommendation_context()` dict
+(plus `model_recommendation`/`final_action`/`policy_override`/
+`override_reason` merged in from the already-computed `DecisionResult`).
+
+Provider is **Google Gemini** (`google-genai` SDK, model
+`gemini-flash-latest`), not Anthropic/Claude — an earlier Anthropic-based
+version was replaced after that account had no usable credit balance;
+Gemini's free tier requires no billing. Credentials come from
+`GEMINI_API_KEY` in `.env`, loaded via `python-dotenv`; `.env` is
+gitignored and never committed, and the key is never printed, logged, or
+shown in the UI. On any API failure (invalid key, rate limit, service
+error) the app shows a sanitized `[Explanation unavailable: ...]` message
+and stays fully usable — the deterministic decision is never affected.
+
+**85.0% of oracle revenue** and **65.7% policy override rate** remain the
+deterministic evaluation metrics from `outputs/full_policy_comparison.json`
+(produced by `run_full_policy_evaluation.py` running the real
+`DecisionEngine`+`PolicyEngine`+`ActionExecutor` stack against the 300-row
+holdout set) — the LLM layer does not compute, alter, or influence either
+number. These are synthetic-holdout evaluation results, not a claim about
+real-world/production performance.
