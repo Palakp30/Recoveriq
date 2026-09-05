@@ -126,7 +126,7 @@ Policy rules can override the model's top recommendation; the model can never ov
 
 **This is a simulation.** `ExecutionResult.simulation` is always `True`. No real payment gateway, messaging service, or customer contact is integrated anywhere in this codebase.
 
-**Known prototype trust limitation:** the executor trusts the `PolicyCheckResult` object it is given - it does not itself re-derive eligibility. A caller who deliberately constructs a fabricated approval object (rather than obtaining one from `PolicyEngine`) could bypass this check; only *accidental* misuse (e.g. passing a bare action string) is prevented. Closing this fully — for example, making `PolicyCheckResult` constructible only from within `PolicyEngine` — is documented here as future production hardening rather than implemented, since it was judged disproportionate to this prototype's scope.
+**Known prototype trust limitation:** the executor trusts the `PolicyCheckResult` object it is given - it does not itself re-derive eligibility. A caller who deliberately constructs a fabricated approval object (rather than obtaining one from `PolicyEngine`) could bypass this check; only *accidental* misuse (e.g. passing a bare action string) is prevented. Closing this fully, for example, making `PolicyCheckResult` constructible only from within `PolicyEngine` — is documented here as future production hardening rather than implemented, since it was judged disproportionate to this prototype's scope.
 
 ## Bounded Gemini Explanation Layer
 
@@ -230,16 +230,6 @@ To regenerate the source datasets from scratch (not required — they are alread
 cd simulator
 python generate_data.py
 ```
-
-## Limitations
-
-- **All data is synthetic.** Transaction features, the historical logging policy, and every recovery probability come from a hand-designed simulator (`simulator/`), not real payment data.
-- **No real payment execution.** `ActionExecutor` is simulation-only; no payment gateway, messaging, or customer-contact integration exists.
-- **In-memory idempotency only.** Duplicate-transaction protection in `DecisionEngine` and `ActionExecutor` is a per-process dictionary; it does not persist across restarts or across multiple processes.
-- **No persistent audit database.** Audit records exist only for the lifetime of the running process.
-- **Executor trust limitation.** As described above, deliberate forgery of a policy approval object is not prevented — only accidental misuse is.
-- **Gemini availability depends on API quota.** The explanation layer degrades gracefully (a clear, sanitized "unavailable" message) if the API is rate-limited or unreachable, but does not include a fallback LLM provider.
-- **This is a buildathon prototype, evaluated entirely on synthetic data.** It has not been validated on real payment data, has no production monitoring, and no claim of production readiness is made.
 
 ## Future Work
 
