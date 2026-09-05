@@ -8,9 +8,9 @@ Built for the **Razorpay AI Buildathon 2026 - Track 03: AI Revenue Recovery**.
 
 ## Problem / What It Solves
 
-Involuntary payment failures — expired cards, insufficient funds, gateway timeouts — cause recurring revenue loss even when the customer has no intention of churning.
+Involuntary payment failures - expired cards, insufficient funds, gateway timeouts - cause recurring revenue loss even when the customer has no intention of churning.
 
-Naive recovery systems treat every failed payment the same way: retry, remind, escalate. This ignores transaction value, customer history, contact fatigue, and the fact that different failures respond to different interventions. The question isn't simply *"will this payment recover?"* — it's *"given this failed payment, which recovery action is most valuable while remaining safe and policy-compliant?"*
+Naive recovery systems treat every failed payment the same way: retry, remind, escalate. This ignores transaction value, customer history, contact fatigue, and the fact that different failures respond to different interventions. The question isn't simply *"will this payment recover?"* - it's *"given this failed payment, which recovery action is most valuable while remaining safe and policy-compliant?"*
 
 ## Objective
 
@@ -20,7 +20,7 @@ Maximize **expected recovered revenue**, subject to deterministic business and s
 
 For every failed payment, RecoverIQ:
 
-1. **Scores five candidate recovery actions** — `retry`, `payment_link`, `reminder`, `escalate`, `wait` — using an ML model trained on transaction and customer-history features.
+1. **Scores five candidate recovery actions** : `retry`, `payment_link`, `reminder`, `escalate`, `wait` - using an ML model trained on transaction and customer-history features.
 2. **Computes expected recovery value** for each action: `amount × predicted recovery probability`.
 3. **Runs every candidate through a deterministic policy engine** of five explicit rules. Policy can override the model's top-scoring action.
 4. **Selects the highest-value action that policy actually allows.** Only policy-approved decisions reach the executor.
@@ -29,45 +29,6 @@ For every failed payment, RecoverIQ:
 
 ## Architecture
 
-```text
-Failed payment
-      |
-      v
-  ML model  -- scores all 5 actions, computes expected recovery value
-      |
-==================================================
- TRUST BOUNDARY: prediction ends, decision authority begins
-==================================================
-      |
-      v
- Policy engine  -- 5 deterministic rules, can override the model
-      |
-      v
-Decision engine -- selects the best action among ELIGIBLE actions only
-      |
-==================================================
- TRUST BOUNDARY: decision is final, execution begins
-==================================================
-      |
-      v
-Action executor -- simulated execution, requires policy approval
-      |
-      v
-Structured audit -- DecisionResult + ExecutionResult
-      |
-==================================================
- TRUST BOUNDARY: decision is finalized, everything below is explanation only
-==================================================
-      |
-      v
-Deterministic decision insights (pure Python, no model/policy call)
-      |
-      v
-Gemini assistant -- plain-English explanation, no control
-      |
-      v
-Streamlit dashboard -- read-only presentation
-```
 
 ![RecoverIQ Architecture](docs/recoveriq_architecture.jpg)
 
@@ -83,13 +44,13 @@ All figures below come from `outputs/full_policy_comparison.json`, produced by `
 | Exact action-match rate vs. oracle | 50.7% |
 | Mean regret vs. oracle | 0.0919 |
 | Mean chosen true recovery probability | 46.63% |
-| System revenue | ₹1,273,814.56 |
-| Oracle revenue (theoretical best-possible) | ₹1,498,542.16 |
+| Expected recovered revenue — RecoverIQ | ₹1,273,814.56 |
+| Expected recovered revenue — Oracle | ₹1,498,542.16 |
 | Total amount at risk | ₹2,596,602.03 |
 | Decision status breakdown | 300 decided, 0 held for manual review |
 | Execution status breakdown | 300 executed, 0 rejected |
 
-**"% of oracle revenue" is a revenue-share ratio against a hypothetical best-possible-action benchmark — it is not a recovery rate and should not be read as one.** No single figure above claims a fraction of transactions that recovered; `mean_chosen_true_prob` (46.63%) is the closest thing to an average recovery probability.
+**"% of oracle revenue" is a revenue-share ratio against a hypothetical best-possible-action benchmark - it is not a recovery rate and should not be read as one.** No single figure above claims a fraction of transactions that recovered; `mean_chosen_true_prob` (46.63%) is the closest thing to an average recovery probability.
 
 **A high (65.7%) policy override rate is evidence the policy layer is doing real, active work** — it means that on nearly two-thirds of transactions, the deterministic policy layer selected something other than the model's raw top pick, rather than simply rubber-stamping the model.
 
